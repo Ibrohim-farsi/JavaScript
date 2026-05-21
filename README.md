@@ -1006,7 +1006,6 @@ removeDuplicates([1, 2, 2, 3, 3, 3, 4]); // [1, 2, 3, 4]
 - [TDZ — Temporal Dead Zone](#tdz--temporal-dead-zone)
 - [Итоговое сравнение](#итоговое-сравнение)
 - [Частые ошибки — Hoisting](#частые-ошибки--hoisting)
-- [Задания — Hoisting и TDZ](#задания--hoisting-и-tdz)
 
 ---
 
@@ -1322,58 +1321,6 @@ let name = "Иброхим";
   // думаешь возьмёт name снаружи — но нет
   let name = "Азим";
   console.log(name); // "Азим"
-}
-```
-
----
-
-## Задания — Hoisting и TDZ
-
-**1.** Что выведет этот код? Объясни почему.
-
-```js
-console.log(a);
-var a = 10;
-console.log(a);
-```
-
-**2.** Что выведет этот код? Объясни почему.
-
-```js
-console.log(b);
-let b = 20;
-```
-
-**3.** Что выведет этот код?
-
-```js
-sayHi();
-sayBye();
-
-function sayHi() {
-  console.log("Привет!");
-}
-
-var sayBye = function() {
-  console.log("Пока!");
-};
-```
-
-**4.** Исправь код чтобы он работал правильно.
-
-```js
-console.log(multiply(3, 4));
-
-var multiply = function(a, b) {
-  return a * b;
-};
-```
-
-**5.** Что выведет этот код и как исправить чтобы вывело `0, 1, 2`?
-
-```js
-for (var i = 0; i < 3; i++) {
-  setTimeout(() => console.log(i), 0);
 }
 ```
 
