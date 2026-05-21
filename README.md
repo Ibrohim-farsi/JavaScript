@@ -1,554 +1,406 @@
-
-# Строки и методы строк в JavaScript
+# Hoisting и TDZ в JavaScript
 
 ---
 
 ## Содержание
 
-- [Что такое строка](#что-такое-строка)
-- [Создание строки](#создание-строки)
-- [Длина строки](#длина-строки)
-- [Доступ к символам](#доступ-к-символам)
-- [Методы строк](#методы-строк)
-- [Шаблонные строки](#шаблонные-строки)
+- [Что такое Hoisting](#что-такое-hoisting)
+- [Hoisting переменных](#hoisting-переменных)
+- [Hoisting функций](#hoisting-функций)
+- [TDZ — Temporal Dead Zone](#tdz--temporal-dead-zone)
+- [Итоговое сравнение](#итоговое-сравнение)
+- [Частые ошибки](#частые-ошибки)
 - [Задания](#задания)
 
 ---
 
-## Что такое строка
+## Что такое Hoisting
 
-Строка — это текст. Любой набор символов: буквы, цифры, пробелы, знаки.
+Hoisting (поднятие) — это когда JavaScript перед запуском кода поднимает объявления переменных и функций наверх своей области видимости.
+
+Это происходит автоматически — ты ничего не делаешь, движок JS делает это сам.
+
+Простой пример:
 
 ```js
-let name    = "Ibrohim";
-let city    = "Гисар";
-let number  = "2008";   // это строка, не число
-let empty   = "";        // пустая строка
+console.log(name); // undefined — не ошибка!
+var name = "Иброхим";
+```
+
+Ты думаешь код читается сверху вниз. Но JavaScript перед запуском делает так:
+
+```js
+var name;            // поднял объявление наверх
+console.log(name);   // undefined
+name = "Иброхим";   // присваивание осталось на месте
+```
+
+Объявление поднялось — значение нет.
+
+---
+
+## Hoisting переменных
+
+### var — поднимается, но без значения
+
+```js
+console.log(a); // undefined
+var a = 5;
+console.log(a); // 5
+```
+
+Что видит JavaScript:
+
+```js
+var a;          // поднялось
+console.log(a); // undefined
+a = 5;          // присваивание на месте
+console.log(a); // 5
 ```
 
 ---
 
-## Создание строки
-
-В JavaScript строку можно написать тремя способами:
+### let и const — поднимаются, но недоступны
 
 ```js
-let a = "двойные кавычки";
-let b = 'одинарные кавычки';
-let c = `обратные кавычки`;  // шаблонная строка
+console.log(b); // ReferenceError: Cannot access 'b' before initialization
+let b = 10;
 ```
 
-Разницы почти нет. Обратные кавычки удобны когда нужно вставить переменную внутрь — об этом в конце.
+```js
+console.log(c); // ReferenceError: Cannot access 'c' before initialization
+const c = 20;
+```
+
+`let` и `const` тоже поднимаются — но до строки где они объявлены, они находятся в **TDZ** и обратиться к ним нельзя.
 
 ---
 
-## Длина строки
-
-`length` — показывает сколько символов в строке.
+### Сравнение var, let, const
 
 ```js
-let name = "Ibrohim";
-console.log(name.length); // 7
+// var — ошибки нет, но значение undefined
+console.log(x); // undefined
+var x = 1;
 
-let city = "Гисар";
-console.log(city.length); // 5
+// let — ошибка
+console.log(y); // ReferenceError
+let y = 2;
 
-let empty = "";
-console.log(empty.length); // 0
-```
-
----
-
-## Доступ к символам
-
-Каждый символ в строке имеет номер — индекс. Счёт начинается с нуля.
-
-```js
-let name = "Ibrohim";
-//          0 1 2 3 4 5 6 7
-
-console.log(name[0]); // "I"
-console.log(name[1]); // "b"
-console.log(name[3]); // "o"
-```
-
-Последний символ:
-
-```js
-console.log(name[name.length - 1]); // "m"
+// const — ошибка
+console.log(z); // ReferenceError
+const z = 3;
 ```
 
 ---
 
-## Методы строк
+## Hoisting функций
 
-### toUpperCase и toLowerCase
+### Function Declaration — поднимается полностью
 
-Переводит все буквы в верхний или нижний регистр.
-
-```js
-let name = "Ibrohim";
-
-console.log(name.toUpperCase()); // "IBROHIM"
-console.log(name.toLowerCase()); // "Ibrohim"
-```
-
-Полезно когда нужно сравнить строки без учёта регистра:
+Function Declaration — это обычная функция написанная через `function`.
 
 ```js
-let input = "ГИСАР";
-let city  = "Гисар";
+sayHello(); // "Привет!" — работает!
 
-console.log(input.toLowerCase() === city.toLowerCase()); // true
-```
-
----
-
-### trim
-
-Убирает пробелы в начале и конце строки. Часто нужно когда пользователь вводит текст.
-
-```js
-let input = "   Ibrohim   ";
-
-console.log(input.trim()); // "Ibrohim"
-```
-
-```js
-let trimStart = "   привет".trimStart(); // "привет"
-let trimEnd   = "привет   ".trimEnd();   // "привет"
-```
-
----
-
-### includes
-
-Проверяет — есть ли одна строка внутри другой. Возвращает `true` или `false`.
-
-```js
-let text = "Добро пожаловать в  Гисар";
-
-console.log(text.includes("Гисар")); // true
-console.log(text.includes("Душанбе")); // false
-```
-
----
-
-### startsWith и endsWith
-
-Проверяет с чего строка начинается или заканчивается.
-
-```js
-let email = "Ibrohim@gmail.com";
-
-console.log(email.startsWith("Ibrohim")); // true
-console.log(email.endsWith(".com"));      // true
-console.log(email.endsWith(".ru"));       // false
-```
-
----
-
-### indexOf
-
-Находит на какой позиции находится символ или слово. Если не найдено — возвращает `-1`.
-
-```js
-let text = "Привет Ibrohim";
-
-console.log(text.indexOf("Ibrohim")); // 7
-console.log(text.indexOf("IbrohimT"));  // -1
-```
-
-Часто используют так:
-
-```js
-if (text.indexOf("Ibrohim") !== -1) {
-  console.log("найдено");
-}
-
-// или короче:
-if (text.includes("Ibrohim")) {
-  console.log("найдено");
+function sayHello() {
+  console.log("Привет!");
 }
 ```
 
----
-
-### slice
-
-Вырезает часть строки. Принимает два числа: начало и конец.
+Почему работает? Потому что вся функция поднимается наверх:
 
 ```js
-let text = "Привет Ibrohim";
-//          0123456789...
+// JavaScript видит так:
+function sayHello() {
+  console.log("Привет!");
+}
 
-console.log(text.slice(0, 5));  // "Привет"
-console.log(text.slice(7));     // "Ibrohim"  — до конца
-console.log(text.slice(-7));    // "Ibrohim"  — с конца
+sayHello(); // "Привет!"
 ```
 
 ---
 
-### replace
+### Function Expression — не поднимается
 
-Заменяет одну часть строки на другую.
+Function Expression — это функция записанная в переменную.
 
 ```js
-let text = "Привет Ibrohim";
+sayHi(); // TypeError: sayHi is not a function
 
-console.log(text.replace("Ibrohim", "IbrohimT")); // "Привет IbrohimT"
+var sayHi = function() {
+  console.log("Привет!");
+};
 ```
 
-Заменяет только первое совпадение. Чтобы заменить все — используй `replaceAll`:
+Что видит JavaScript:
 
 ```js
-let text = "кот и кот и кот";
-
-console.log(text.replace("кот", "пёс"));    // "пёс и кот и кот"
-console.log(text.replaceAll("кот", "пёс")); // "пёс и пёс и пёс"
-```
-
----
-
-### split
-
-Разбивает строку на массив по разделителю.
-
-```js
-let text = "яблоко,груша,банан";
-let fruits = text.split(",");
-
-console.log(fruits); // ["яблоко", "груша", "банан"]
-console.log(fruits[0]); // "яблоко"
-```
-
-Разбить по пробелам:
-
-```js
-let sentence = "Привет как дела";
-let words = sentence.split(" ");
-
-console.log(words); // ["Привет", "как", "дела"]
-console.log(words.length); // 3
-```
-
-Разбить на отдельные символы:
-
-```js
-let name = "Али";
-console.log(name.split("")); // ["А", "л", "и"]
+var sayHi;   // поднялось только объявление var
+sayHi();     // ошибка — sayHi пока undefined, не функция
+sayHi = function() {
+  console.log("Привет!");
+};
 ```
 
 ---
 
-### repeat
-
-Повторяет строку несколько раз.
+### Arrow Function — тоже не поднимается
 
 ```js
-let star = "*";
-console.log(star.repeat(5)); // "*****"
+greet(); // TypeError: greet is not a function
 
-let line = "=-";
-console.log(line.repeat(3)); // "=-=-="
+var greet = () => {
+  console.log("Привет!");
+};
 ```
 
 ---
 
-### padStart и padEnd
-
-Дополняет строку символами до нужной длины. Удобно для форматирования.
+### Итог по функциям
 
 ```js
-let num = "5";
-console.log(num.padStart(3, "0")); // "005"
-console.log(num.padEnd(3, "0"));   // "500"
+// Function Declaration — работает до объявления
+hello(); // "Привет!"
+function hello() {
+  console.log("Привет!");
+}
 
-// Часы и минуты:
-let hours   = "9";
-let minutes = "5";
-console.log(hours.padStart(2, "0") + ":" + minutes.padStart(2, "0")); // "09:05"
+// Function Expression — не работает до объявления
+bye(); // TypeError
+var bye = function() {
+  console.log("Пока!");
+};
+
+// Arrow Function — не работает до объявления
+go(); // TypeError
+var go = () => {
+  console.log("Вперёд!");
+};
 ```
 
 ---
 
-## Шаблонные строки
+## TDZ — Temporal Dead Zone
 
-Вместо склейки строк через `+` можно использовать обратные кавычки и `${}`.
-
-```js
-let name = "Ibrohim";
-let age  = 20;
-
-// старый способ
-console.log("Меня зовут " + name + " и мне " + age + " лет");
-
-// новый способ — шаблонная строка
-console.log(`Меня зовут ${name} и мне ${age} лет`);
-```
-
-Внутри `${}` можно писать любой код:
+TDZ (Временная мёртвая зона) — это период от начала блока до строки где объявлена переменная `let` или `const`. В этот период переменная существует но обратиться к ней нельзя.
 
 ```js
-let price = 1000;
-let main = 30;
+{
+  // TDZ для name начинается здесь
+  console.log(name); // ReferenceError — TDZ!
+  console.log(name); // ReferenceError — TDZ!
+  console.log(name); // ReferenceError — TDZ!
 
-console.log(`Цена после скидки: ${price - price * main / 100}`); // 700
-```
+  let name = "Иброхим"; // TDZ заканчивается здесь
 
-Многострочный текст:
-
-```js
-let message = `
-  Привет, ${name}!
-  Добро пожаловать.
-`;
-console.log(message);
+  console.log(name); // "Иброхим" — теперь можно
+}
 ```
 
 ---
 
-## Важно помнить
-
-Строки нельзя изменить — они неизменяемые. Каждый метод возвращает новую строку.
+### TDZ в функции
 
 ```js
-let name = "Ibrohim";
-name.toUpperCase(); // это ничего не меняет
+function test() {
+  console.log(value); // ReferenceError — TDZ
+  let value = 42;
+  console.log(value); // 42
+}
 
-console.log(name); // "Ibrohim" — всё ещё маленькими
+test();
+```
 
-// правильно:
-let upperName = name.toUpperCase();
-console.log(upperName); // "IBROHIM"
+---
+
+### Почему TDZ существует
+
+TDZ защищает от ошибок. С `var` можно случайно использовать переменную до её объявления и получить `undefined` — это сложно найти.
+
+```js
+// var — тихая ошибка, получаем undefined
+function bad() {
+  console.log(name); // undefined — непонятно почему
+  var name = "Иброхим";
+}
+
+// let — явная ошибка, сразу видно проблему
+function good() {
+  console.log(name); // ReferenceError — сразу понятно
+  let name = "Иброхим";
+}
+```
+
+С `let` и `const` ошибка сразу видна — легче найти и исправить.
+
+---
+
+### TDZ и typeof
+
+С `var` — `typeof` возвращает `"undefined"` без ошибки:
+
+```js
+console.log(typeof x); // "undefined"
+var x = 5;
+```
+
+С `let` — `typeof` тоже вызывает ошибку в TDZ:
+
+```js
+console.log(typeof y); // ReferenceError — TDZ!
+let y = 5;
+```
+
+---
+
+## Итоговое сравнение
+
+| | `var` | `let` | `const` |
+|---|---|---|---|
+| Поднимается? | да | да | да |
+| Доступна до объявления? | да (undefined) | нет (TDZ) | нет (TDZ) |
+| Можно переобъявить? | да | нет | нет |
+| Можно изменить значение? | да | да | нет |
+
+| | Function Declaration | Function Expression | Arrow Function |
+|---|---|---|---|
+| Поднимается полностью? | да | нет | нет |
+| Работает до объявления? | да | нет | нет |
+
+---
+
+## Частые ошибки
+
+### Ошибка 1 — использовать var и ждать ошибку
+
+```js
+// думаешь будет ошибка — но нет
+console.log(name); // undefined — не ошибка!
+var name = "Иброхим";
+```
+
+Используй `let` и `const` — они сразу покажут ошибку.
+
+---
+
+### Ошибка 2 — вызывать Function Expression до объявления
+
+```js
+// не работает
+sayHi();
+
+var sayHi = function() {
+  console.log("Привет!");
+};
+
+// работает
+sayHello();
+
+function sayHello() {
+  console.log("Привет!");
+}
+```
+
+---
+
+### Ошибка 3 — var в цикле
+
+```js
+// var — одна переменная для всех итераций
+for (var i = 0; i < 3; i++) {
+  setTimeout(() => console.log(i), 100);
+}
+// 3, 3, 3
+
+// let — своя переменная для каждой итерации
+for (let i = 0; i < 3; i++) {
+  setTimeout(() => console.log(i), 100);
+}
+// 0, 1, 2
+```
+
+---
+
+### Ошибка 4 — забыть про TDZ в блоке
+
+```js
+let name = "Иброхим";
+
+{
+  console.log(name); // ReferenceError — TDZ!
+  // думаешь возьмёт name снаружи — но нет
+  // внутри блока есть своя let name, и она в TDZ
+  let name = "Азим";
+  console.log(name); // "Азим"
+}
 ```
 
 ---
 
 ## Задания
 
-**1.** Напиши функцию `main(str)` — проверяет является ли строка email адресом (содержит `@` и заканчивается на `.com`).
+**1.** Что выведет этот код? Объясни почему.
 
 ```js
-main("Ibrohim@gmail.com"); // true
-main("Ibrohim@gmail.ru");  // false
-main("Ibrohimgmail.com");  // false
+console.log(a);
+var a = 10;
+console.log(a);
 ```
 
-**2.** Напиши функцию `capitalize(str)` — делает первую букву заглавной, остальные маленькими.
+**2.** Что выведет этот код? Объясни почему.
 
 ```js
-capitalize("Ibrohim");  // "Ibrohim"
-capitalize("IBROHIM T");   // "IBROHIM T"
+console.log(b);
+let b = 20;
 ```
 
-**3.** Напиши функцию `countWords(str)` — считает сколько слов в строке.
+**3.** Что выведет этот код?
 
 ```js
-countWords("Привет как дела");  // 3
-countWords("JavaScript");       // 1
+sayHi();
+sayBye();
+
+function sayHi() {
+  console.log("Привет!");
+}
+
+var sayBye = function() {
+  console.log("Пока!");
+};
 ```
 
-**4.** Напиши функцию `isPalindrome(str)` — проверяет является ли строка палиндромом (читается одинаково с обеих сторон).
+**4.** Исправь код чтобы он работал правильно.
 
 ```js
-isPalindrome("level");  // true
-isPalindrome("hello");  // false
-isPalindrome("madam");  // true
+console.log(multiply(3, 4));
+
+var multiply = function(a, b) {
+  return a * b;
+};
 ```
+
+**5.** Что выведет этот код?
+
+```js
+for (var i = 0; i < 3; i++) {
+  setTimeout(() => console.log(i), 0);
+}
+```
+
+Как исправить чтобы вывело `0, 1, 2`?
 
 ---
 
 ## Итог
 
-| Метод | Что делает |
-|---|---|
-| `length` | длина строки |
-| `toUpperCase()` | все буквы заглавные |
-| `toLowerCase()` | все буквы маленькие |
-| `trim()` | убирает пробелы по краям |
-| `includes()` | есть ли подстрока |
-| `startsWith()` | начинается ли с... |
-| `endsWith()` | заканчивается ли на... |
-| `indexOf()` | позиция подстроки |
-| `slice()` | вырезать часть |
-| `replace()` | заменить часть |
-| `split()` | разбить на массив |
-| `repeat()` | повторить строку |
-| `padStart()` | дополнить слева |
-| `padEnd()` | дополнить справа |
+**Hoisting** — JavaScript поднимает объявления переменных и функций наверх до запуска кода.
 
-# Рекурсия и Замыкания в JavaScript
+- `var` — поднимается с значением `undefined`
+- `let` и `const` — поднимаются но попадают в TDZ
+- `function declaration` — поднимается полностью, можно вызвать до объявления
+- `function expression` и `arrow function` — не поднимаются
 
----
+**TDZ** — период когда `let` и `const` уже существуют но ещё недоступны. Защищает от случайного использования переменной до её объявления.
 
-## Содержание
-
-- [Рекурсия](#рекурсия)
-- [Замыкания](#замыкания)
-
----
-
-## Рекурсия
-
-Рекурсия — это когда функция вызывает саму себя.
-
-Любая рекурсивная функция состоит из двух частей:
-
-- **Base case** — условие остановки. Без него функция будет вызывать себя бесконечно и программа упадёт с ошибкой `Maximum call stack size exceeded`.
-- **Recursive case** — вызов самой себя с меньшим значением.
-
-```js
-function main(n) {
-  if (n <= 0) return 0;   // base case
-  return main(n - 1);     // recursive case
-}
-```
-
----
-
-### Пример 1 — Обратный отсчёт
-
-```js
-function main(n) {
-  if (n === 0) return;
-  console.log(n);
-  main(n - 1);
-}
-
-console.log(main(5));
-// 5
-// 4
-// 3
-// 2
-// 1
-```
-
----
-
-### Пример 2 — Факториал
-
-```js
-function main(n) {
-  if (n <= 1) return 1;
-  return n * main(n - 1);
-}
-
-console.log(main(5)); // 120
-// 5 * 4 * 3 * 2 * 1 = 120
-```
-
----
-
-### Пример 3 — Сумма чисел
-
-```js
-function main(n) {
-  if (n === 1) return 1;
-  return n + main(n - 1);
-}
-
-console.log(main(4)); // 10
-// 4 + 3 + 2 + 1 = 10
-```
-
----
-
-## Замыкания
-
-Замыкание — это когда функция запоминает переменные из внешней области видимости, даже после того как внешняя функция уже завершила работу.
-
-```js
-function main() {
-  let cnt = 0;
-
-  function main1() {
-    cnt++;
-    console.log(cnt);
-  }
-
-  return main1;
-}
-
-let ccnt = main();
-console.log(ccnt()); // 1
-console.log(ccnt()); // 2
-console.log(ccnt()); // 3
-```
-
-`main()` уже завершилась, но `cnt` не удалилась — потому что `main1` держит на неё ссылку. Это и есть замыкание.
-
----
-
-### Пример 1 — Салом гуфтан
-
-```js
-function main(name) {
-    return (message) => {
-        console.log(name + ": " + message);
-    };
-}
-
-let Ibrohim = main("Иброхим");
-console.log(Ibrohim("привет"));   // Иброхим: привет
-console.log(Ibrohim("как дела")); // Иброхим: как дела
-```
-
----
-
-### Пример 2 — Скидка
-
-```js
-function main(percent) {
-    return (price) => {
-        console.log(price - price * percent / 100);
-    };
-}
-
-let Ibrohim = main(30);
-console.log(Ibrohim(1000)); // 700
-console.log(Ibrohim(500));  // 350
-```
-
----
-
-### Пример 3 — Счётчик
-
-```js
-function main(start) {
-    return () => {
-        start++;
-        console.log(start);
-    };
-}
-
-let cnt = main(0);
-console.log(cnt()); // 1
-console.log(cnt()); // 2
-console.log(cnt()); // 3
-```
-
----
-
-### Пример 4 — Умножение
-
-```js
-function main(factor) {
-    return (number) => {
-        console.log(number * factor);
-    };
-}
-
-let Ibrohim = main(2);
-console.log(Ibrohim(5));  // 10
-console.log(Ibrohim(8);  // 16
-console.log(Ibrohim(12)) ; // 24
-```
-
----
-
-## Итог
-
-**Рекурсия** — функция вызывает себя. Нужен base case чтобы остановиться. Удобна для вложенных структур.
-
-**Замыкание** — функция запоминает переменные из внешней области. Используется для счётчиков, приватных данных, кэша.
+Главное правило: всегда объявляй переменные и функции до их использования. Используй `let` и `const` вместо `var`.
